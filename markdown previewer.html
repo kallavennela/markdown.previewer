@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Markdown Previewer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #1a1a1a;
+            color: #e0e0e0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            background: #2d2d2d;
+            padding: 12px 20px;
+            border-bottom: 1px solid #404040;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .clear-btn {
+            background: #404040;
+            color: #e0e0e0;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .clear-btn:hover {
+            background: #505050;
+        }
+
+        .container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .editor, .preview {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .pane-header {
+            background: #252525;
+            padding: 8px 16px;
+            font-size: 13px;
+            font-weight: 500;
+            border-bottom: 1px solid #404040;
+            color: #aaa;
+        }
+
+        .editor {
+            border-right: 1px solid #404040;
+        }
+
+        #markdown-input {
+            flex: 1;
+            background: #1e1e1e;
+            color: #e0e0e0;
+            border: none;
+            padding: 16px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 14px;
+            line-height: 1.6;
+            resize: none;
+            outline: none;
+        }
+
+        #preview-output {
+            flex: 1;
+            background: #1e1e1e;
+            padding: 16px;
+            overflow-y: auto;
+            line-height: 1.6;
+        }
+
+        /* Markdown styling */
+        #preview-output h1, #preview-output h2, #preview-output h3 {
+            margin: 16px 0 8px 0;
+            border-bottom: 1px solid #404040;
+            padding-bottom: 4px;
+        }
+
+        #preview-output h1 { font-size: 24px; }
+        #preview-output h2 { font-size: 20px; }
+        #preview-output h3 { font-size: 18px; }
+
+        #preview-output p { margin: 8px 0; }
+        
+        #preview-output code {
+            background: #2d2d2d;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 13px;
+        }
+
+        #preview-output pre {
+            background: #2d2d2d;
+            padding: 12px;
+            border-radius: 4px;
+            overflow-x: auto;
+            margin: 12px 0;
+        }
+
+        #preview-output pre code {
+            background: none;
+            padding: 0;
+        }
+
+        #preview-output blockquote {
+            border-left: 3px solid #007acc;
+            padding-left: 12px;
+            margin: 12px 0;
+            color: #bbb;
+        }
+
+        #preview-output ul, #preview-output ol {
+            margin: 8px 0 8px 20px;
+        }
+
+        #preview-output li { margin: 4px 0; }
+
+        #preview-output a { color: #4da6ff; }
+
+        #preview-output table {
+            border-collapse: collapse;
+            margin: 12px 0;
+            width: 100%;
+        }
+
+        #preview-output th, #preview-output td {
+            border: 1px solid #404040;
+            padding: 6px 12px;
+            text-align: left;
+        }
+
+        #preview-output th { background: #2d2d2d; }
+
+        @media (max-width: 768px) {
+            .container { flex-direction: column; }
+            .editor { border-right: none; border-bottom: 1px solid #404040; }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Markdown Previewer</h1>
+        <button class="clear-btn" id="clearBtn">Clear</button>
+    </div>
+    
+    <div class="container">
+        <div class="editor">
+            <div class="pane-header">MARKDOWN</div>
+            <textarea id="markdown-input" placeholder="Type your markdown here..."></textarea>
+        </div>
+        
+        <div class="preview">
+            <div class="pane-header">PREVIEW</div>
+            <div id="preview-output"></div>
+        </div>
+    </div>
+
+    <!-- Using marked.js for proper markdown parsing -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    
+    <script>
+        const input = document.getElementById('markdown-input');
+        const output = document.getElementById('preview-output');
+        const clearBtn = document.getElementById('clearBtn');
+
+        // Default text to show how it works
+        const defaultMarkdown = `# Welcome to Markdown Previewer
+
+## Features
+- **Bold text** and *italic text*
+- \`inline code\` and code blocks
+- Lists and tables
+- [Links](https://example.com)
+
+### Code Example
+\`\`\`javascript
+function hello() {
+    console.log("Hello, markdown!");
+}
+\`\`\`
+
+> This is a blockquote
+
+1. First item
+2. Second item
+3. Third item
+
+| Name | Age |
+| --- | --- |
+| Alice | 24 |
+| Bob | 27 |`;
+
+        input.value = defaultMarkdown;
+
+        // Update preview
+        function updatePreview() {
+            const markdownText = input.value;
+            output.innerHTML = marked.parse(markdownText);
+        }
+
+        // Live update as you type
+        input.addEventListener('input', updatePreview);
+
+        // Clear button
+        clearBtn.addEventListener('click', () => {
+            input.value = '';
+            updatePreview();
+            input.focus();
+        });
+
+        // Sync scroll - optional nice touch
+        input.addEventListener('scroll', () => {
+            const percentage = input.scrollTop / (input.scrollHeight - input.clientHeight);
+            output.scrollTop = percentage * (output.scrollHeight - output.clientHeight);
+        });
+
+        // Initial render
+        updatePreview();
+    </script>
+</body>
+</html>
